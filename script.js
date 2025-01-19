@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Dropdown menu functionality
   const moreButtons = document.querySelectorAll('.more-button');
-  console.log("more-button: ", moreButtons)
   let activeDropdown = null;
 
   moreButtons.forEach(button => {
@@ -90,6 +89,8 @@ function hideSearch() {
   searchToggle.style.display = 'block';
   searchInputContainer.style.display = 'none';
   tabButtonsContainer.style.display = 'flex';
+  const type = document.querySelector('.btn-text.tab-button.active').getAttribute("data-tab");
+  loadBlogs(type);
 }
 
 searchToggle.addEventListener('click', showSearch);
@@ -106,15 +107,23 @@ function showBlogEditor() {
 
     editingBlogId = null; // Reset editing mode
 }
-function loadBlogs(type) {
+function loadBlogs(type, qry) {
   type = type || 'published'
   let blogsContainer = document.getElementById("blogsContainer");
   blogsContainer.innerHTML = ""; // Clear previous blogs before loading
 
   let blogs = JSON.parse(localStorage.getItem("blogs")) || [];
-  const filteredBlogs = blogs.filter(blog => {
-    return type === "published" ? blog.publish : !blog.publish;
-  });
+  if(qry && type == 'both')
+    filteredBlogs = blogs.filter(blog => blog.title.toLowerCase().includes(qry.toLowerCase()));
+  else
+    var filteredBlogs = blogs.filter(blog => {
+      return type === "published" ? blog.publish : !blog.publish;
+    });
+
+  var len = blogs.length - filteredBlogs.length
+  document.querySelector(".publish-count").textContent = type == 'published' ? filteredBlogs.length : len;
+  document.querySelector(".draft-count").textContent = type == 'drafted' ? filteredBlogs.length : len;
+
   if (blogs.length === 0) {
       blogsContainer.innerHTML = 
       `<div style="margin-top: 72px;text-align: center;">
@@ -136,7 +145,7 @@ function loadBlogs(type) {
 
       blogElement.innerHTML = `
           <div class="blog-header" id="blog-header-${blog.id}">
-              <div class="blog-date">Sep 26, 2024 at 06:56 AM</div>
+              <div class="blog-date">${blog.createdAt}</div>
               <div class="more-button">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="1"/>
@@ -183,7 +192,6 @@ function loadBlogs(type) {
       `;
       blogsContainer.appendChild(blogElement);
       const publishStatus = document.getElementById(`blog-status-${blog.id}`);
-      console.log("publishstatus: ", publishStatus)
       if(blog.publish) {
         publishStatus.style.visibility = "visible";
       } else {
@@ -251,7 +259,18 @@ function saveBlog(type) {
   }
 
   let blogs = JSON.parse(localStorage.getItem("blogs")) || [];
-  let createdAt = new Date().toLocaleDateString();
+  let createdAt = new Date();
+  // Format the date as "Sep 26, 2024 at 06:56 AM"
+  console.log("createdAt ", createdAt)
+  let formattedDate = createdAt.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }) + " at " + createdAt.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
   // if (editingBlogId !== null) {
   //     // If editing, update the existing blog
   //     let blogIndex = blogs.findIndex(blog => blog.id === editingBlogId);
@@ -261,11 +280,11 @@ function saveBlog(type) {
   // } else {
       // If adding new blog
       let blogId = new Date().getTime(); // Unique ID
-      blogs.push({ id: blogId, title, content, createdAt, publish: type });
+      blogs.push({ id: blogId, title, content, createdAt: formattedDate, publish: type });
   // }
 
   localStorage.setItem("blogs", JSON.stringify(blogs));
-  loadBlogs();
+  loadBlogs(type);
   title = "";
   content = ""
   closeEditor();
@@ -281,3 +300,11 @@ function deleteBlog(id) {
     loadBlogs();
   }
 }
+
+//search blog
+// Add event listener to the search input
+document.querySelector(".search-input").addEventListener("input", event => {
+  const searchQuery = event.target.value;
+  // const type = document.querySelector('.btn-text.tab-button.active').getAttribute("data-tab");
+  loadBlogs('both',searchQuery);
+});
