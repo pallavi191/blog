@@ -1,66 +1,59 @@
 // load all blogs
 document.addEventListener("DOMContentLoaded", () => {
   loadBlogs();
+})
 
-  // Dropdown menu functionality
-  const moreButtons = document.querySelectorAll('.more-button');
-  let activeDropdown = null;
-
-  moreButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const dropdown = button.querySelector('.dropdown-menu');
-      
-      if (activeDropdown && activeDropdown !== dropdown) {
-        activeDropdown.classList.remove('show');
-      }
-      
-      dropdown.classList.toggle('show');
-      activeDropdown = dropdown;
+function getMoreBtns() {
+    // Dropdown menu functionality
+    const moreButtons = document.querySelectorAll('.more-button');
+    let activeDropdown = null;
+    console.log("moreButtons: ", moreButtons)
+    moreButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dropdown = button.querySelector('.dropdown-menu');
+        
+        if (activeDropdown && activeDropdown !== dropdown) {
+          activeDropdown.classList.remove('show');
+        }
+        
+        dropdown.classList.toggle('show');
+        activeDropdown = dropdown;
+      });
     });
-  });
-
-  // Close dropdown when clicking outside
-  document.addEventListener('click', () => {
-    if (activeDropdown) {
-      activeDropdown.classList.remove('show');
-      activeDropdown = null;
-    }
-  });
-
-  // Handle dropdown item clicks
-  document.querySelectorAll('.dropdown-item').forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const action = e.currentTarget.textContent.trim();
-      const blog = e.currentTarget.closest('.blog');
-      const title = blog.querySelector('.blog-title').textContent;
-
-      switch (action) {
-        case 'View Blog':
-          console.log(`Viewing blog: ${title}`);
-          break;
-        case 'Edit':
-          console.log(`Editing blog: ${title}`);
-          break;
-        // case 'Delete':
-        //   if (confirm(`Are you sure you want to delete "${title}"?`)) {
-        //     console.log(`Deleting blog: ${title}`);
-        //     // blog.remove();
-        //     deleteBlog(id)
-        //   }
-          break;
-      }
-
+  
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
       if (activeDropdown) {
         activeDropdown.classList.remove('show');
         activeDropdown = null;
       }
     });
-  });
-
-})
-
+  
+    // Handle dropdown item clicks
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = e.currentTarget.textContent.trim();
+        const blog = e.currentTarget.closest('.blog');
+        const title = blog.querySelector('.blog-title').textContent;
+  
+        switch (action) {
+          case 'View Blog':
+            console.log(`Viewing blog: ${title}`);
+            break;
+          case 'Edit':
+            console.log(`Editing blog: ${title}`);
+            break;
+        }
+  
+        if (activeDropdown) {
+          activeDropdown.classList.remove('show');
+          activeDropdown = null;
+        }
+      });
+    });
+}
 // Tab switching
 const tabButtons = document.querySelectorAll('.tab-button');
 tabButtons.forEach(button => {
@@ -199,6 +192,8 @@ function loadBlogs(type, qry) {
       }
       
   });
+  // Reinitialize dropdown menu functionality after loading blogs
+  getMoreBtns();
 }
 
 // blog Editor Modal - add blog js
