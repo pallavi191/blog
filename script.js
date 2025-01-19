@@ -1,13 +1,13 @@
 // load all blogs
 document.addEventListener("DOMContentLoaded", () => {
   loadBlogs();
+  tabSwitching()
 })
 
 function getMoreBtns() {
     // Dropdown menu functionality
     const moreButtons = document.querySelectorAll('.more-button');
     let activeDropdown = null;
-    console.log("moreButtons: ", moreButtons)
     moreButtons.forEach(button => {
       button.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -55,15 +55,17 @@ function getMoreBtns() {
     });
 }
 // Tab switching
-const tabButtons = document.querySelectorAll('.tab-button');
-tabButtons.forEach(button => {
-  button.addEventListener('click', () => {
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
-    const filter = button.getAttribute("data-tab");
-    loadBlogs(filter);
+function tabSwitching() {
+  const tabButtons = document.querySelectorAll('.tab-button');
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      const filter = button.getAttribute("data-tab");
+      loadBlogs(filter);
+    });
   });
-});
+}
 
 // Search functionality
 const searchToggle = document.getElementById('searchToggle');
@@ -146,7 +148,7 @@ function loadBlogs(type, qry) {
                   <circle cx="12" cy="19" r="1"/>
                   </svg>
                   <div class="dropdown-menu">
-                      <div class="dropdown-item">
+                      <div class="dropdown-item view-${blog.id}">
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                           <polyline points="15 3 21 3 21 9"></polyline>
@@ -190,7 +192,10 @@ function loadBlogs(type, qry) {
       } else {
         publishStatus.style.display = "none";
       }
-      
+
+      if(type == 'drafted') {
+        document.getElementsByClassName(`view-${blog.id}`)[0].style.display = "none";
+      }
   });
   // Reinitialize dropdown menu functionality after loading blogs
   getMoreBtns();
@@ -256,7 +261,6 @@ function saveBlog(type) {
   let blogs = JSON.parse(localStorage.getItem("blogs")) || [];
   let createdAt = new Date();
   // Format the date as "Sep 26, 2024 at 06:56 AM"
-  console.log("createdAt ", createdAt)
   let formattedDate = createdAt.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -279,10 +283,9 @@ function saveBlog(type) {
   // }
 
   localStorage.setItem("blogs", JSON.stringify(blogs));
-  loadBlogs(type);
-  title = "";
-  content = ""
+  document.getElementById("editorForm").reset(); // Clear the form
   closeEditor();
+  loadBlogs();
 }
 
 // Function to delete a blog
