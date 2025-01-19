@@ -236,27 +236,31 @@ document.addEventListener('click', () => {
 });
 
 toolbarButtons.forEach(button => {
-  button.addEventListener('click', () => {
+  button.addEventListener('click', (event) => {
+    event.preventDefault(); // Prevent form submission
     button.classList.toggle('active');
   });
 });
-
 
 //add blog
 function saveBlog(type) {
   var title = document.querySelector(".title-input").value.trim();
   var content = document.querySelector(".content-area").value.trim();
-  var errorMessages = document.getElementById("errorMessages");
+  var errorTitle = document.getElementById("errorTitle");
+  var errorContent = document.getElementById("errorContent");
   var blogId = document.querySelector('#blogId').textContent;
-  errorMessages.innerHTML = ""; // Clear previous errors
+  errorTitle.innerHTML = ""; // Clear previous errors
+  errorContent.innerHTML = ""; // Clear previous errors
 
+  // Validate title and content
   if (!title || !content) {
     if (!title) {
-      errorMessages.innerHTML += "<p>Title is required.</p>";
+      errorTitle.innerHTML += "<p>*Title is required.</p>";
     }
     if (!content) {
-      errorMessages.innerHTML += "<p>Content is required.</p>";
+      errorContent.innerHTML += "<p>*Content is required.</p>";
     }
+    return; // Stop further processing
   }
 
   let blogs = JSON.parse(localStorage.getItem("blogs")) || [];

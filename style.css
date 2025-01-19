@@ -431,3 +431,10 @@ h1 {
   .content-area::placeholder {
     color: #9ca3af;
   }
+
+  .error-messages p {
+    color: red;
+    margin: 0;
+    font-size: 14px;
+    margin-bottom: 1rem;
+  }
