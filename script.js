@@ -42,9 +42,6 @@ function getMoreBtns() {
           case 'View Blog':
             console.log(`Viewing blog: ${title}`);
             break;
-          case 'Edit':
-            console.log(`Editing blog: ${title}`);
-            break;
         }
   
         if (activeDropdown) {
@@ -156,7 +153,7 @@ function loadBlogs(type, qry) {
                           </svg>
                           View Blog
                       </div>
-                      <div class="dropdown-item">
+                      <div class="dropdown-item" onClick='openEditor(${JSON.stringify(blog).replace(/'/g, "&#39;")})'>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -206,12 +203,16 @@ const editorModal = document.getElementById('editorModal');
 const publishButton = document.getElementById('publishButton');
 const publishMenu = document.getElementById('publishMenu');
 const toolbarButtons = document.querySelectorAll('.toolbar-button');
-    
-const openEditor = document.getElementById('openEditor');
-openEditor.addEventListener('click', () => {
+
+function openEditor(blog) {
   editorModal.classList.add('show');
+  if(blog) {
+    document.querySelector('.title-input').value = blog.title;
+    document.querySelector('.content-area').value = blog.title;
+    document.querySelector('#blogId').textContent = blog.id;
+  }
   document.body.style.overflow = 'hidden';
-});
+}
 
 function closeEditor() {
   editorModal.classList.remove('show');
@@ -246,7 +247,7 @@ function saveBlog(type) {
   var title = document.querySelector(".title-input").value.trim();
   var content = document.querySelector(".content-area").value.trim();
   var errorMessages = document.getElementById("errorMessages");
-
+  var blogId = document.querySelector('#blogId').textContent;
   errorMessages.innerHTML = ""; // Clear previous errors
 
   if (!title || !content) {
@@ -259,28 +260,32 @@ function saveBlog(type) {
   }
 
   let blogs = JSON.parse(localStorage.getItem("blogs")) || [];
-  let createdAt = new Date();
-  // Format the date as "Sep 26, 2024 at 06:56 AM"
-  let formattedDate = createdAt.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }) + " at " + createdAt.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-  // if (editingBlogId !== null) {
-  //     // If editing, update the existing blog
-  //     let blogIndex = blogs.findIndex(blog => blog.id === editingBlogId);
-  //     if (blogIndex !== -1) {
-  //         blogs[blogIndex] = { id: editingBlogId, title, userName, content, createdAt };
-  //     }
-  // } else {
+
+  if (blogId) {
+      // If editing, update the existing blog
+      let blogIndex = blogs.findIndex(blog => blog.id == blogId);
+      if (blogIndex !== -1) {
+          // blogs[blogIndex] = { id: blogId, title, content, createdAt: , publish: type };
+          blogs[blogIndex].title = title;
+          blogs[blogIndex].content = content;
+          blogs[blogIndex].publish = type;
+      }
+  } else {
       // If adding new blog
-      let blogId = new Date().getTime(); // Unique ID
+      let createdAt = new Date();
+      // Format the date as "Sep 26, 2024 at 06:56 AM"
+      let formattedDate = createdAt.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }) + " at " + createdAt.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      blogId = new Date().getTime(); // Unique ID
       blogs.push({ id: blogId, title, content, createdAt: formattedDate, publish: type });
-  // }
+  }
 
   localStorage.setItem("blogs", JSON.stringify(blogs));
   document.getElementById("editorForm").reset(); // Clear the form
