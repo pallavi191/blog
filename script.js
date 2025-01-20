@@ -2,6 +2,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   loadBlogs();
   tabSwitching()
+  const editor = document.getElementById('blogContent');
+  if (editor) {
+    editor.focus();
+  }
 })
 
 function getMoreBtns() {
@@ -235,17 +239,25 @@ document.addEventListener('click', () => {
   publishMenu.classList.remove('show');
 });
 
-toolbarButtons.forEach(button => {
-  button.addEventListener('click', (event) => {
-    event.preventDefault(); // Prevent form submission
-    button.classList.toggle('active');
-  });
-});
+// Clean content by removing empty divs and unnecessary line breaks
+function cleanContent(content) {
+  // Remove sequences of empty divs and line breaks
+  content = content.replace(/<div><br><\/div>/g, '<br>');
+  content = content.replace(/<div>\s*<\/div>/g, '');
+  content = content.replace(/^(<br>)+|(<br>)+$/g, '');
+  
+  // If content is completely empty, return empty string
+  if (content.replace(/<[^>]*>/g, '').trim() === '') {
+    return '';
+  }
+  
+  return content;
+}
 
 //add blog
 function saveBlog(type) {
   var title = document.querySelector(".title-input").value.trim();
-  var content = document.querySelector(".content-area").value.trim();
+  var content = cleanContent(document.querySelector("#blogContent").innerHTML);
   var errorTitle = document.getElementById("errorTitle");
   var errorContent = document.getElementById("errorContent");
   var blogId = document.querySelector('#blogId').textContent;
@@ -315,3 +327,60 @@ document.querySelector(".search-input").addEventListener("input", event => {
   // const type = document.querySelector('.btn-text.tab-button.active').getAttribute("data-tab");
   loadBlogs('both',searchQuery);
 });
+
+//format blog
+function formatBlog(event, command, value = null) {
+  event.preventDefault(); // Prevent form submission
+  if (command === 'link') {
+    const url = prompt('Enter the link URL:', 'https://');
+    if (url) {
+      document.execCommand('createLink', false, url);
+    }
+  } else if (command === 'heading') {
+    document.execCommand('formatBlock', false, '<h1>');
+  } else {
+    document.execCommand(command, false, undefined);
+  }
+  
+  // Restore focus to the editor
+  const editor = document.getElementById('blogContent');
+  editor.focus();
+
+  updateToolbarState();
+}
+
+function updateToolbarState() {
+  const commands = ['bold', 'italic', 'underline', 'insertUnorderedList', 'formatBlock'];
+  const buttons = {
+      bold: document.getElementById('boldButton'),
+      italic: document.getElementById('italicButton'),
+      underline: document.getElementById('underlineButton'),
+      insertUnorderedList: document.getElementById('listButton'),
+      formatBlock: {
+          h1: document.getElementById('headingButton'),
+          blockquote: document.getElementById('quoteButton'),
+          pre: document.getElementById('codeButton')
+      }
+  };
+  commands.forEach(command => {
+    if (command === 'formatBlock') {
+        // console.log("buttons: ", buttons)
+        ['h1', 'blockquote', 'pre'].forEach(tag => {
+              if (document.queryCommandValue(command) === tag) {
+                  buttons[command][tag].classList.add('active');
+              } else {
+                  buttons[command][tag].classList.remove('active');
+              }
+          });
+      } else {
+          if (document.queryCommandState(command)) {
+              buttons[command].classList.add('active');
+          } else {
+              buttons[command].classList.remove('active');
+          }
+      }
+  });
+}
+
+document.getElementById('blogContent').addEventListener('keyup', updateToolbarState);
+document.getElementById('blogContent').addEventListener('mouseup', updateToolbarState);
