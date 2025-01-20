@@ -212,7 +212,7 @@ function openEditor(blog) {
   editorModal.classList.add('show');
   if(blog) {
     document.querySelector('.title-input').value = blog.title;
-    document.querySelector('.content-area').value = blog.title;
+    document.querySelector('.content-area').innerHTML = blog.content;
     document.querySelector('#blogId').textContent = blog.id;
   }
   document.body.style.overflow = 'hidden';
